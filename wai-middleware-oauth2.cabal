@@ -1,0 +1,106 @@
+name:            wai-middleware-oauth2
+version:         0.1
+cabal-version:   >= 1.8
+license:         MIT
+license-file:    LICENSE.md
+category:        Web
+copyright:       © 2014 Matthew Green
+author:          Matthew Green <babygguy@gmail.com>
+maintainer:      Matthew Green <babygguy@gmail.com>
+stability:       experimental
+tested-with:     GHC == 7.6.3
+synopsis:        OAuth2 middleware for WAI
+homepage:        https://github.com/nerdgguy/wai-middleware-oauth2
+bug-reports:     https://github.com/nerdgguy/wai-middleware-oauth2/issues
+build-type:      Simple
+description:
+        OAuth2 middleware for wai
+        .
+        See example/simple.hs for example usage.
+
+extra-source-files:
+        README
+
+source-repository head
+        type:     git
+        location: git://github.com/NerdGGuy/wai-middleware-oauth2.git
+
+library
+        exposed-modules:
+                Network.Wai.Middleware.OAuth2
+
+        build-depends:
+                base,
+                byteable,
+                cryptohash,
+                time,
+                securemem,
+                wai-middleware-cookie,
+                data-default,
+                bytestring,
+                cookie,
+                base64-bytestring,
+                wai,
+                http-types,
+                wai-test,
+                aeson,
+                transformers,
+                errors,
+                hoauth2
+
+        hs-source-dirs: src
+
+test-suite test-oauth2
+        build-depends:
+                base,
+                securemem,
+                wai-middleware-cookie,
+                wai-middleware-oauth2,
+                bytestring,
+                data-default,
+                cookie,
+                base64-bytestring,
+                wai,
+                http-types,
+                case-insensitive,
+                wai-middleware-session-stateless,
+                QuickCheck,
+                wai-test,
+                hoauth2
+
+        type: exitcode-stdio-1.0
+
+        main-is: test.hs
+
+        buildable: True
+
+        hs-source-dirs: test
+
+Executable simple
+  Main-Is:        simple.hs
+  Build-Depends:
+                base,
+                network,
+                securemem,
+                wai-middleware-cookie,
+                wai-middleware-oauth2,
+                bytestring,
+                data-default,
+                text,
+                wai-middleware-static,
+                wai-extra,
+                warp,
+                warp-tls,
+                cookie,
+                base64-bytestring,
+                wai,
+                http-types,
+                case-insensitive,
+                wai-middleware-session-stateless,
+                QuickCheck,
+                wai-test,
+                aeson,
+                hoauth2,
+                errors
+
+  Hs-Source-Dirs: example
