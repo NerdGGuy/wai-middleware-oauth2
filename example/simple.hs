@@ -2,7 +2,7 @@
 module Main where
 
 import Network.Wai
-import Network.Wai.Middleware.OAuth2 as OAuth2
+import qualified Network.Wai.Middleware.OAuth2 as OAuth2
 import Keys (googleKey)
 import Data.Text (Text)
 import Network.HTTP.Types (status200, status400, status404)
@@ -14,21 +14,22 @@ import Network.Wai.Handler.WarpTLS (runTLS, tlsSettings)
 import Network.Wai.Middleware.CleanPath (cleanPath)
 import Control.Error
 import Data.ByteString
+import Network.HTTP.Conduit (Manager, newManager, conduitManagerSettings)
 
 application :: L.ByteString -> Application
-application x _ = return $ responseLBS status200 [("Content-Type", "text/plain")] x
+application x _ sendResponse = sendResponse $ responseLBS status200 [("Content-Type", "text/plain")] x
 
-notFound _ = return $ responseLBS status404 [("Content-Type", "text/plain")] "404 Not Found"
+notFound _ sendResponse = sendResponse $ responseLBS status404 [("Content-Type", "text/plain")] "404 Not Found"
 
-sessionApp :: [Text] -> Application
-sessionApp [] _ = do return $ OAuth2.login googleKey (googleScopeEmail ++ state)
+sessionApp :: Manager -> [Text] -> Application
+sessionApp mgr _ _ sendResponse = sendResponse $ OAuth2.login googleKey (googleScopeEmail ++ state)
     where
-        googleScopeEmail :: QueryParams
+        googleScopeEmail :: OAuth2.QueryParams
         googleScopeEmail = [("scope", "email")]
-        state :: QueryParams
+        state :: OAuth2.QueryParams
         state = [("state", "00000000")]
-sessionApp ["googleCallback"] req = OAuth2.basicCallback googleKey checkState application (\_ -> application "worked") req
-sessionApp x req = return $ notFound x req
+sessionApp mgr ["googleCallback"] req sendResponse = OAuth2.basicCallback mgr googleKey checkState application (\_ -> application "worked") req sendResponse
+sessionApp _ _ req sendResponse = notFound req sendResponse
 
 --buildResponse $ runEitherT $ OAuth2.callback googleKey checkState req
 --    where
@@ -40,11 +41,13 @@ sessionApp x req = return $ notFound x req
 --                Right _ -> application "worked" req
 
 error400 :: Application
-error400 _ = return $ responseLBS status400 [] mempty
+error400 _ sendResponse = sendResponse $ responseLBS status400 [] mempty
 
 checkState :: BSC8.ByteString -> Bool
 checkState = (==) "00000000"
 
 filterPath x = Right x
 
-main = runTLS (tlsSettings  "certificate.pem" "key.pem") defaultSettings { settingsPort = 443 } $ cleanPath filterPath "" sessionApp
+main = do
+  mgr <- newManager conduitManagerSettings
+  runTLS (tlsSettings  "certificate.pem" "key.pem") defaultSettings { settingsPort = 443 } $ cleanPath filterPath "" $ sessionApp mgr

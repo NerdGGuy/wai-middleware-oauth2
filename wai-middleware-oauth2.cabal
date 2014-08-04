@@ -19,88 +19,80 @@ description:
         See example/simple.hs for example usage.
 
 extra-source-files:
-        README
+  README.md
+  LICENSE.md
 
 source-repository head
-        type:     git
-        location: git://github.com/NerdGGuy/wai-middleware-oauth2.git
+  type:     git
+  location: git://github.com/NerdGGuy/wai-middleware-oauth2.git
+
+Flag examples
+  Description: Build the example executables
+  Default: False
 
 library
-        exposed-modules:
-                Network.Wai.Middleware.OAuth2
+  exposed-modules:
+    Network.Wai.Middleware.OAuth2
 
-        build-depends:
-                base,
-                byteable,
-                cryptohash,
-                time,
-                securemem,
-                wai-middleware-cookie,
-                data-default,
-                bytestring,
-                cookie,
-                base64-bytestring,
-                wai,
-                http-types,
-                wai-test,
-                aeson,
-                transformers,
-                errors,
-                hoauth2
+  build-depends:
+    base              >=4.5 && <5,
+    http-types        >= 0.8    && < 0.9,
+    bytestring        >= 0.9    && < 0.11,
+    aeson             >= 0.7    && < 0.8,
+    wai               >= 3.0.0  && < 3.1,
+    wai-test,
+    transformers,
+    errors,
+    hoauth2,
+    http-conduit
 
-        hs-source-dirs: src
+  hs-source-dirs: src
+
+  ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -fno-warn-unused-do-bind
 
 test-suite test-oauth2
-        build-depends:
-                base,
-                securemem,
-                wai-middleware-cookie,
-                wai-middleware-oauth2,
-                bytestring,
-                data-default,
-                cookie,
-                base64-bytestring,
-                wai,
-                http-types,
-                case-insensitive,
-                wai-middleware-session-stateless,
-                QuickCheck,
-                wai-test,
-                hoauth2
+  build-depends:
+    base              >=4.5 && <5,
+    http-types        >= 0.8    && < 0.9,
+    bytestring        >= 0.9    && < 0.11,
+    wai               >= 3.0.0  && < 3.1,
+    wai-middleware-oauth2,
+    QuickCheck,
+    wai-extra,
+    hoauth2
 
-        type: exitcode-stdio-1.0
+  type: exitcode-stdio-1.0
 
-        main-is: test.hs
+  main-is: test.hs
 
-        buildable: True
+  hs-source-dirs: test
 
-        hs-source-dirs: test
+  ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -fno-warn-unused-do-bind
 
 Executable simple
+  if flag(examples)
+    Buildable: True
+    Build-Depends:
+      base              >=4.5     && < 5,
+      http-types        >= 0.8    && < 0.9,
+      bytestring        >= 0.9    && < 0.11,
+      wai               >= 3.0.0  && < 3.1,
+      wai-middleware-oauth2,
+      wai-extra,
+      text,
+      warp              >= 3.0.0  && < 3.1,
+      warp-tls          >= 3.0.0  && < 3.1,
+      http-types,
+      QuickCheck,
+      hoauth2,
+      errors,
+      http-conduit
+
+  else
+    Buildable: False
+
   Main-Is:        simple.hs
-  Build-Depends:
-                base,
-                network,
-                securemem,
-                wai-middleware-cookie,
-                wai-middleware-oauth2,
-                bytestring,
-                data-default,
-                text,
-                wai-middleware-static,
-                wai-extra,
-                warp,
-                warp-tls,
-                cookie,
-                base64-bytestring,
-                wai,
-                http-types,
-                case-insensitive,
-                wai-middleware-session-stateless,
-                QuickCheck,
-                wai-test,
-                aeson,
-                hoauth2,
-                errors
 
   Hs-Source-Dirs: example
+
+  ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -fno-warn-unused-do-bind

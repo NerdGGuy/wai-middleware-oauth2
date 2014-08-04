@@ -20,10 +20,11 @@ state = [("state", "00000000")]
 
 prop_login :: Property
 prop_login = monadicIO $ do
-    login <- run $ runSession (request defaultRequest) (\_ -> return $ OAuth2.login googleKey (googleScopeEmail ++ state))
+    login <- run $ runSession (request defaultRequest) (\_ sendResponse -> sendResponse $ OAuth2.login googleKey (googleScopeEmail ++ state))
     run $ print (show $ simpleHeaders login)
     assert $ (simpleHeaders login) == locationHeader
     where
+        --build it myself and check against OAuth2 answer
         locationHeader = [("Location",oauthOAuthorizeEndpoint googleKey `appendQueryParam` (transform' [("client_id",Just $ oauthClientId googleKey),("response_type",Just "code"),("redirect_uri",oauthCallback googleKey),("scope",Just "email"),("state",Just "00000000")]))]
 
 main = do

@@ -1,0 +1,12 @@
+{-# LANGUAGE OverloadedStrings #-}
+module Keys where
+
+import           Network.OAuth.OAuth2
+
+googleKey :: OAuth2
+googleKey = OAuth2 { oauthClientId = "###########-################################.apps.googleusercontent.com"                                    ##########_########-####
+                   , oauthClientSecret = "##########_########-####"
+                   , oauthCallback = Just "https://######.com/googleCallback"
+                   , oauthOAuthorizeEndpoint = "https://accounts.google.com/o/oauth2/auth"
+                   , oauthAccessTokenEndpoint = "https://accounts.google.com/o/oauth2/token"
+                   }
