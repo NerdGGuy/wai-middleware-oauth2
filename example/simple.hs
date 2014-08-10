@@ -12,9 +12,10 @@ import qualified Data.ByteString.Char8 as BSC8
 import Network.Wai.Handler.Warp (defaultSettings, settingsPort)
 import Network.Wai.Handler.WarpTLS (runTLS, tlsSettings)
 import Network.Wai.Middleware.CleanPath (cleanPath)
-import Control.Error
-import Data.ByteString
 import Network.HTTP.Conduit (Manager, newManager, conduitManagerSettings)
+
+htmlapp :: L.ByteString -> Application
+htmlapp x _ sendResponse = sendResponse $ responseLBS status200 [("Content-Type", "text/html")] x
 
 application :: L.ByteString -> Application
 application x _ sendResponse = sendResponse $ responseLBS status200 [("Content-Type", "text/plain")] x
@@ -22,7 +23,8 @@ application x _ sendResponse = sendResponse $ responseLBS status200 [("Content-T
 notFound _ sendResponse = sendResponse $ responseLBS status404 [("Content-Type", "text/plain")] "404 Not Found"
 
 sessionApp :: Manager -> [Text] -> Application
-sessionApp mgr _ _ sendResponse = sendResponse $ OAuth2.login googleKey (googleScopeEmail ++ state)
+sessionApp _ [] req sendResponse = htmlapp "<html><body><a href=\"login\">login</a></body><html>" req sendResponse
+sessionApp _ ["login"] _ sendResponse = sendResponse $ OAuth2.login googleKey (googleScopeEmail ++ state)
     where
         googleScopeEmail :: OAuth2.QueryParams
         googleScopeEmail = [("scope", "email")]
@@ -30,15 +32,6 @@ sessionApp mgr _ _ sendResponse = sendResponse $ OAuth2.login googleKey (googleS
         state = [("state", "00000000")]
 sessionApp mgr ["googleCallback"] req sendResponse = OAuth2.basicCallback mgr googleKey checkState application (\_ -> application "worked") req sendResponse
 sessionApp _ _ req sendResponse = notFound req sendResponse
-
---buildResponse $ runEitherT $ OAuth2.callback googleKey checkState req
---    where
---        buildResponse :: IO (Either ByteString (OAuth2.OAuth2Result OAuth2.AccessToken)) -> IO Response
---        buildResponse x = do
---            eAccessToken <- x
---            case eAccessToken of
---                Left err -> application (L.fromStrict err) req
---                Right _ -> application "worked" req
 
 error400 :: Application
 error400 _ sendResponse = sendResponse $ responseLBS status400 [] mempty
